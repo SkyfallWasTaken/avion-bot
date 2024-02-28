@@ -1,34 +1,24 @@
 use serenity::model::timestamp::Timestamp;
-use std::fmt;
 
 /// The format in which you want the timestamp to be generated.
+#[derive(strum_macros::Display)]
 pub enum Format {
+    #[strum(to_string = "t")]
     ShortTime,
+    #[strum(to_string = "T")]
     LongTime,
 
+    #[strum(to_string = "d")]
     ShortDate,
+    #[strum(to_string = "D")]
     LongDate,
+    #[strum(to_string = "f")]
     LongDateShortTime,
+    #[strum(to_string = "F")]
     LongDateDayAndShortTime,
 
+    #[strum(to_string = "R")]
     Relative,
-}
-
-impl fmt::Display for Format {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let r#type = match self {
-            Format::ShortTime => "t",
-            Format::LongTime => "T",
-
-            Format::ShortDate => "d",
-            Format::LongDate => "D",
-            Format::LongDateShortTime => "f",
-            Format::LongDateDayAndShortTime => "f",
-
-            Format::Relative => "R",
-        };
-        write!(f, "{type}")
-    }
 }
 
 pub trait TimestampExt {
