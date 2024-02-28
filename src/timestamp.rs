@@ -2,6 +2,7 @@ use serenity::model::timestamp::Timestamp;
 
 /// The format in which you want the timestamp to be generated.
 #[derive(strum_macros::Display)]
+#[allow(unused)]
 pub enum Format {
     #[strum(to_string = "t")]
     ShortTime,
