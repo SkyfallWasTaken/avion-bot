@@ -6,6 +6,7 @@
 - [Git CLI](https://git-scm.com/) installed and available in your `PATH`
   - Git bundled with applications such as GitHub Desktop will result in the build process failing
 - [A Discord application and bot created on the Developer Portal](https://discord.com/developers)
+- A Sentry application (optional)
 
 > [!WARNING]  
 >
@@ -23,10 +24,11 @@ git clone https://github.com/SkyfallWasTaken/avion-bot
 
 ### Development
 
-Open `.env.example` and fill in `DISCORD_TOKEN` and `DISCORD_TESTING_GUILD_ID`.
+Open `.env.example` and fill in the following variables:
 
 - **DISCORD_TOKEN**: Your Discord bot token
 - **DISCORD_TESTING_GUILD_ID**: Your testing server's server ID
+- **SENRTY_URL**: (optional) Sentry URL to send events to
 
 Finally, rename the file to `.env`.
 
