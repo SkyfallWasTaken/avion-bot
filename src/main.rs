@@ -70,11 +70,13 @@ async fn event_handler(
     _framework: poise::FrameworkContext<'_, Data, Error>,
     _data: &Data,
 ) -> Result<(), Error> {
-    match event {
-        serenity::FullEvent::Ready { data_about_bot, .. } => {
-            info!("Logged in as {}", data_about_bot.user.name);
-        }
-        _ => {}
-    };
+    if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
+        info!(
+            "Logged in as {}#{}",
+            data_about_bot.user.name,
+            // Should never be None, as bots still use the "Name#0000" format instead of usernames
+            data_about_bot.user.discriminator.unwrap()
+        );
+    }
     Ok(())
 }
