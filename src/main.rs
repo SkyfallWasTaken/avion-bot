@@ -8,25 +8,17 @@ mod commands;
 use commands::*;
 mod timestamp;
 
-//use libc::malloc_trim;
+use std::env;
+use std::str::FromStr;
+
+//use libc::malloc_trim; malloc_trim(0) trick for performance
 
 struct Data {} // User data, which is stored and accessible in all command invocations
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-use std::str::FromStr;
-
-#[tokio::main]
-async fn main() -> Result<()> {
-    color_eyre::install()?;
-    env_logger::init();
-    #[cfg(debug_assertions)]
-    {
-        warn!("Debug mode enabled, loading from .env file");
-        dotenvy::dotenv()?;
-    }
-
-    let token = std::env::var("DISCORD_TOKEN")?;
+async fn bot_main() -> Result<()> {
+    let token = env::var("DISCORD_TOKEN")?;
     let intents = serenity::GatewayIntents::non_privileged();
 
     let framework = poise::Framework::builder()
@@ -41,7 +33,7 @@ async fn main() -> Result<()> {
             Box::pin(async move {
                 debug!("Registering slash commands...");
                 if cfg!(debug_assertions) {
-                    let guild_id = std::env::var("DISCORD_TESTING_GUILD_ID")?;
+                    let guild_id = env::var("DISCORD_TESTING_GUILD_ID")?;
                     warn!("In debug - will register commands in the test guild ({guild_id})");
                     let id = serenity::GuildId::from_str(guild_id.as_str())?;
                     poise::builtins::register_in_guild(ctx, &framework.options().commands, id)
@@ -78,5 +70,34 @@ async fn event_handler(
             data_about_bot.user.discriminator.unwrap()
         );
     }
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    color_eyre::install()?;
+    env_logger::init();
+    #[cfg(debug_assertions)]
+    {
+        warn!("Debug mode enabled, loading from .env file");
+        dotenvy::dotenv()?;
+    }
+    if let Ok(sentry_url) = env::var("SENTRY_URL") {
+        debug!("Initializing Sentry...");
+        std::mem::forget(sentry::init((
+            sentry_url,
+            sentry::ClientOptions {
+                release: sentry::release_name!(),
+                ..Default::default()
+            },
+        )));
+    } else {
+        warn!("SENTRY_URL not set, not initializing Sentry")
+    }
+
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?
+        .block_on(bot_main())?;
+
     Ok(())
 }

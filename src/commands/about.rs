@@ -11,6 +11,7 @@ pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
     // TODO: finish the command
     let build_timestamp = Timestamp::parse(env!("VERGEN_BUILD_TIMESTAMP"))?
         .to_discord_timestamp(TimestampFormat::LongDateShortTime);
+    panic!("Everything is on fire!");
     let embed = CreateEmbed::default()
         .title("About Avion")
         .field("Version", env!("CARGO_PKG_VERSION"), true)
