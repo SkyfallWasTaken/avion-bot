@@ -76,11 +76,8 @@ async fn event_handler(
 fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
-    #[cfg(debug_assertions)]
-    {
-        warn!("Debug mode enabled, loading from .env file");
-        dotenvy::dotenv()?;
-    }
+    let _ = dotenvy::dotenv();
+
     if let Ok(sentry_url) = env::var("SENTRY_URL") {
         debug!("Initializing Sentry...");
         std::mem::forget(sentry::init((
