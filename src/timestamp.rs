@@ -24,6 +24,17 @@ pub enum Format {
 }
 
 pub trait TimestampExt {
+    /// Converts a Serenity `Timestamp` into a Discord timestamp.
+    ///
+    /// Example:
+    /// ```rs
+    /// use serenity::model::timestamp::Timestamp;
+    /// use crate::timestamp::Format;
+    ///
+    /// let serenity_timestamp = Timestamp::now();
+    /// let discord_timestamp = serenity_timestamp.to_discord_timestamp(Format::LongDate);
+    /// println!("{discord_timestamp}");
+    /// ```
     fn to_discord_timestamp(&self, format: Format) -> String;
 }
 
