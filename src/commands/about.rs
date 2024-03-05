@@ -2,7 +2,7 @@ use poise::serenity_prelude as serenity;
 use serenity::model::timestamp::Timestamp;
 use serenity::{Colour, CreateEmbed, CreateEmbedFooter};
 
-use crate::timestamp::{Format as TimestampFormat, TimestampExt};
+use crate::util::timestamp::{Format as TimestampFormat, TimestampExt};
 use crate::{Context, Error};
 
 /// Information about Avion

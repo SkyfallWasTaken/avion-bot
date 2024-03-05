@@ -6,7 +6,7 @@ use serenity::gateway::ActivityData;
 
 mod commands;
 use commands::*;
-mod timestamp;
+mod util;
 
 use std::env;
 use std::str::FromStr;
@@ -23,7 +23,7 @@ async fn bot_main() -> Result<()> {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![user_info(), about()],
+            commands: vec![user_info(), about(), avatar()],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
             },

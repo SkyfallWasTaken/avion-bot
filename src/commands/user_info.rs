@@ -1,9 +1,10 @@
 // TODO: make this a user command too
+use crate::util::get_avatar_url;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
 use serenity::model::Colour;
 
-use crate::timestamp::{Format as TimestampFormat, TimestampExt};
+use crate::util::timestamp::{Format as TimestampFormat, TimestampExt};
 
 /// Displays your or another user's username, avatar, and account creation date
 #[poise::command(slash_command, rename = "userinfo")]
@@ -18,8 +19,9 @@ pub async fn user_info(
     let formatted_username = format!("@{username}", username = u.name);
     let display_name = u.global_name.clone().unwrap_or(u.name.clone());
 
-    let mut embed = serenity::CreateEmbed::new()
+    let embed = serenity::CreateEmbed::new()
         .title(formatted_username)
+        .thumbnail(get_avatar_url(&u))
         .colour(Colour::BLUE)
         .fields(vec![
             ("Display name", display_name, true),
@@ -30,9 +32,6 @@ pub async fn user_info(
             ("User ID", format!("`{}`", u.id), true),
             ("Is bot", if u.bot { "Yes" } else { "No" }.into(), true),
         ]);
-    if let Some(avatar_url) = u.avatar_url() {
-        embed = embed.thumbnail(avatar_url);
-    }
     ctx.send(poise::CreateReply::default().embed(embed)).await?;
 
     Ok(())
