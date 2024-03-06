@@ -1,4 +1,3 @@
-use crate::util::get_avatar_url;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
 use serenity::Colour;
@@ -18,7 +17,7 @@ pub async fn user(
 
     let embed = serenity::CreateEmbed::new()
         .title(format!("@{username}'s avatar", username = u.name))
-        .image(get_avatar_url(&u))
+        .image(u.face())
         .colour(Colour::BLUE);
 
     ctx.send(poise::CreateReply::default().embed(embed)).await?;

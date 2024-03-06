@@ -1,5 +1,4 @@
 // TODO: make this a user command too
-use crate::util::get_avatar_url;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
 use serenity::model::Colour;
@@ -21,7 +20,7 @@ pub async fn user_info(
 
     let embed = serenity::CreateEmbed::new()
         .title(formatted_username)
-        .thumbnail(get_avatar_url(&u))
+        .thumbnail(u.face())
         .colour(Colour::BLUE)
         .fields(vec![
             ("Display name", display_name, true),
