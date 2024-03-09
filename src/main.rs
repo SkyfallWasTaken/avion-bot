@@ -77,16 +77,17 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
     let _ = dotenvy::dotenv();
+    let _guard;
 
     if let Ok(sentry_url) = env::var("SENTRY_URL") {
         debug!("Initializing Sentry...");
-        std::mem::forget(sentry::init((
+        _guard = sentry::init((
             sentry_url,
             sentry::ClientOptions {
                 release: sentry::release_name!(),
                 ..Default::default()
             },
-        )));
+        ));
     } else {
         warn!("SENTRY_URL not set, not initializing Sentry")
     }
