@@ -10,13 +10,13 @@ color-eyre = "0.6.2"
 dotenvy = "0.15.7"
 env_logger = "0.11.2"
 log = "0.4.20"
-poise = "0.6.1"
+poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
 sentry = { version = "0.32.2", default-features = false, features = [
     "tokio",
     "panic",
     "backtrace",
     "contexts",
-    "transport"
+    "transport",
 ] }
 strum = "0.26.1"
 strum_macros = "0.26.1"

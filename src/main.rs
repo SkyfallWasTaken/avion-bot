@@ -24,9 +24,7 @@ async fn bot_main() -> Result<()> {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![user_info(), about(), avatar()],
-            event_handler: |ctx, event, framework, data| {
-                Box::pin(event_handler(ctx, event, framework, data))
-            },
+            event_handler: |framework, event| Box::pin(event_handler(framework, event)),
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
@@ -57,10 +55,8 @@ async fn bot_main() -> Result<()> {
 }
 
 async fn event_handler(
-    _ctx: &serenity::Context,
-    event: &serenity::FullEvent,
     _framework: poise::FrameworkContext<'_, Data, Error>,
-    _data: &Data,
+    event: &serenity::FullEvent,
 ) -> Result<(), Error> {
     if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
         info!(
