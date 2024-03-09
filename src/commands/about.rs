@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 use serenity::model::timestamp::Timestamp;
 use serenity::{Colour, CreateEmbed, CreateEmbedFooter};
 
+use crate::util::image_urls;
 use crate::util::timestamp::{Format as TimestampFormat, TimestampExt};
 use crate::{Context, Error};
 
@@ -20,7 +21,7 @@ pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
         .field("Rust version", env!("VERGEN_RUSTC_SEMVER"), true)
         .field("Git commit", format!("`{}`", env!("VERGEN_GIT_SHA")), true)
         // TODO: add images
-        // .thumbnail("https://cdn.discordapp.com/avatars/8980/8980.png")
+        .thumbnail(image_urls::AVION_AVATAR)
         .colour(Colour::BLUE)
         .footer(CreateEmbedFooter::new(
             "Third-party licenses: TODO (ask @justhypex)",
