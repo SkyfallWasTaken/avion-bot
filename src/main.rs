@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
-use log::{debug, info, warn};
+use tracing::{debug, info, warn};
 
 use poise::serenity_prelude as serenity;
 use poise::FrameworkContext;
@@ -112,7 +112,7 @@ async fn event_handler(
 
 fn main() -> Result<()> {
     color_eyre::install()?;
-    env_logger::init();
+    tracing_subscriber::fmt::init();
     let _ = dotenvy::dotenv();
 
     let _guard;
