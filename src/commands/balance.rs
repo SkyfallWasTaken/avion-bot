@@ -1,6 +1,5 @@
 use crate::embeds;
 use crate::{Context, Error};
-use log::debug;
 use poise::serenity_prelude as serenity;
 use serenity::Colour;
 
