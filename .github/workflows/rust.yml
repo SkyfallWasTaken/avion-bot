@@ -19,6 +19,7 @@ jobs:
         with:
           components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
+        with:
       - name: Build
         run: cargo build --release
       - name: Run clippy
