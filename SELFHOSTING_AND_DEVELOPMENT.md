@@ -42,6 +42,18 @@ Finally, rename the file to `.env`, and run `source .env`
 
 Just set the above variables another way.
 
+## Building the project
+
+### If you have added migrations
+
+Run:
+
+```rs
+cargo sqlx prepare
+```
+
+and ensure that the generated files are checked into Git.
+
 ## Compiling
 
 Finally, run:
