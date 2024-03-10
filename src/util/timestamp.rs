@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use serenity::model::timestamp::Timestamp;
+use serenity::Timestamp;
 
 /// The format in which you want the timestamp to be generated.
 #[derive(strum_macros::Display)]

@@ -6,6 +6,8 @@
 - [Git CLI](https://git-scm.com/) installed and available in your `PATH`
   - Git bundled with applications such as GitHub Desktop will result in the build process failing
 - [A Discord application and bot created on the Developer Portal](https://discord.com/developers)
+- A Postgres database (Supabase is a nice free one)
+- `sqlx-cli` (`cargo install sqlx-cli`)
 - A Sentry application (optional)
 
 > [!WARNING]  
@@ -29,8 +31,9 @@ Open `.env.example` and fill in the following variables:
 - **DISCORD_TOKEN**: Your Discord bot token
 - **DISCORD_TESTING_GUILD_ID**: Your testing server's server ID
 - **SENRTY_URL**: (optional) Sentry URL to send events to
+- **DATABASE_URL**: Your Postgres database URL.
 
-Finally, rename the file to `.env`.
+Finally, rename the file to `.env`, and run `source .env`
 
 > [!WARNING]  
 > **Never** share your Discord bot token.

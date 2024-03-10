@@ -11,7 +11,7 @@ pub async fn avatar(_: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn user(
     ctx: Context<'_>,
-    #[description = "Selected user"] user: Option<serenity::User>,
+    #[description = "Selected user - defaults to you"] user: Option<serenity::User>,
 ) -> Result<(), Error> {
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
 

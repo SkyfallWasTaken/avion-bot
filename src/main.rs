@@ -1,29 +1,39 @@
+use std::env;
+use std::str::FromStr;
+
+use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
 use log::{debug, info, warn};
 
 use poise::serenity_prelude as serenity;
-use serenity::gateway::ActivityData;
+use poise::FrameworkContext;
+use serenity::{ActivityData, FullEvent, Interaction};
+
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 
 mod commands;
 use commands::*;
+mod embeds;
 mod util;
-
-use std::env;
-use std::str::FromStr;
-
 //use libc::malloc_trim; malloc_trim(0) trick for performance
 
-struct Data {} // User data, which is stored and accessible in all command invocations
+// User data, which is stored and accessible in all command invocations
+struct Data {
+    pub db: PgPool,
+}
+
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 async fn bot_main() -> Result<()> {
-    let token = env::var("DISCORD_TOKEN")?;
-    let intents = serenity::GatewayIntents::non_privileged();
+    let token = env::var("DISCORD_TOKEN").context("env variable is `DISCORD_TOKEN`")?;
+    let db_url = env::var("DATABASE_URL").context("env variable is `DATABASE_URL`")?;
+    let intents = serenity::GatewayIntents::GUILD_INTEGRATIONS;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![user_info(), about(), avatar()],
+            commands: vec![user_info(), about(), avatar(), balance()],
             event_handler: |framework, event| Box::pin(event_handler(framework, event)),
             ..Default::default()
         })
@@ -40,13 +50,19 @@ async fn bot_main() -> Result<()> {
                     poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 }
 
-                Ok(Data {})
+                debug!("Creating PgPool...");
+                let pool = PgPoolOptions::new()
+                    .max_connections(5)
+                    .connect(&db_url)
+                    .await?;
+
+                Ok(Data { db: pool })
             })
         })
         .build();
 
     let client = serenity::ClientBuilder::new(token, intents)
-        .activity(ActivityData::watching("over your servers :)"))
+        .activity(ActivityData::watching("over your server"))
         .framework(framework)
         .await;
     client?.start().await?;
@@ -55,16 +71,41 @@ async fn bot_main() -> Result<()> {
 }
 
 async fn event_handler(
-    _framework: poise::FrameworkContext<'_, Data, Error>,
-    event: &serenity::FullEvent,
+    framework: FrameworkContext<'_, Data, Error>,
+    event: &FullEvent,
 ) -> Result<(), Error> {
-    if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
-        info!(
-            "Logged in as {}#{}",
-            data_about_bot.user.name,
-            // Should never be None, as bots still use the "Name#0000" format instead of usernames
-            data_about_bot.user.discriminator.unwrap()
-        );
+    match event {
+        FullEvent::Ready { data_about_bot, .. } => {
+            info!(
+                "Ready! Logged in as {}#{}",
+                data_about_bot.user.name,
+                // Should never be None, as bots still use the "Name#0000" format instead of usernames
+                data_about_bot.user.discriminator.unwrap()
+            );
+        }
+        FullEvent::InteractionCreate { interaction } => {
+            // TODO: maybe use generics or if let?
+            let user = match interaction {
+                Interaction::Command(cmd) => Some(&cmd.user),
+                Interaction::Component(cmd) => Some(&cmd.user),
+                _ => None,
+            };
+
+            if let Some(user) = user {
+                let db = &framework.user_data.db;
+                sqlx::query!(
+                    "
+                    INSERT INTO users (user_id)
+                    VALUES ($1)
+                    ON CONFLICT (user_id) DO NOTHING
+                    ",
+                    user.id.to_string()
+                )
+                .execute(db)
+                .await?;
+            }
+        }
+        _ => {}
     }
     Ok(())
 }
@@ -73,8 +114,8 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
     let _ = dotenvy::dotenv();
-    let _guard;
 
+    let _guard;
     if let Ok(sentry_url) = env::var("SENTRY_URL") {
         debug!("Initializing Sentry...");
         _guard = sentry::init((
@@ -85,7 +126,7 @@ fn main() -> Result<()> {
             },
         ));
     } else {
-        warn!("SENTRY_URL not set, not initializing Sentry")
+        warn!("SENTRY_URL not set, not initializing Sentry");
     }
 
     tokio::runtime::Builder::new_multi_thread()
