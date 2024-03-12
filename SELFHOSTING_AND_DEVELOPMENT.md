@@ -54,7 +54,7 @@ cargo sqlx prepare
 
 and ensure that the generated files are checked into Git.
 
-## Compiling
+### Compiling
 
 Finally, run:
 
