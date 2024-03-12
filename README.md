@@ -1,3 +1,3 @@
 # Avion
 
-A Discord bot.
+A WIP Discord bot written in Rust.
