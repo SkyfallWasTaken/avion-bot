@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT wallet_balance, bank_balance\nFROM users\nWHERE user_id = $1 AND guild_id = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "wallet_balance",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "bank_balance",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "ced8eabfd6615b1a719f41975034a4409040f2201a2f75972129ec4856fae53d"
+}
