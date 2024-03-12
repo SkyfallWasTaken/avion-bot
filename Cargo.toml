@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-color-eyre = "0.6.2"
-const_format = "0.2.32"
-dotenvy = "0.15.7"
+color-eyre = "0.6"
+const_format = "0.2"
+dotenvy = "0.15"
 poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
-sentry = { version = "0.32.2", default-features = false, features = [
+sentry = { version = "0.32", default-features = false, features = [
     "tokio",
     "panic",
     "backtrace",
@@ -22,15 +22,15 @@ sqlx = { version = "0.7", features = [
     "runtime-tokio",
     "tls-native-tls",
 ] }
-strum = "0.26.1"
-strum_macros = "0.26.1"
-tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
+strum = "0.26"
+strum_macros = "0.26"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
 
 [build-dependencies]
-eyre = "0.6.12"
-vergen = { version = "8.0.0", features = [
+eyre = "0.6"
+vergen = { version = "8", features = [
     "build",
     "git",
     "gitcl",
