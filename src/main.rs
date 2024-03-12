@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
+use poise::serenity_prelude::GatewayIntents;
 use tracing::{debug, info, warn};
 
 use poise::serenity_prelude as serenity;
@@ -29,7 +30,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 async fn bot_main() -> Result<()> {
     let token = env::var("DISCORD_TOKEN").context("env variable is `DISCORD_TOKEN`")?;
     let db_url = env::var("DATABASE_URL").context("env variable is `DATABASE_URL`")?;
-    let intents = serenity::GatewayIntents::GUILD_INTEGRATIONS;
+    let intents = GatewayIntents::GUILD_INTEGRATIONS | GatewayIntents::GUILDS;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -90,19 +91,27 @@ async fn event_handler(
                 Interaction::Component(cmd) => Some(&cmd.user),
                 _ => None,
             };
+            let guild_id = match interaction {
+                Interaction::Command(cmd) => cmd.guild_id,
+                Interaction::Component(cmd) => cmd.guild_id,
+                _ => None,
+            };
 
             if let Some(user) = user {
-                let db = &framework.user_data.db;
-                sqlx::query!(
-                    "
-                    INSERT INTO users (user_id)
-                    VALUES ($1)
-                    ON CONFLICT (user_id) DO NOTHING
-                    ",
-                    user.id.to_string()
-                )
-                .execute(db)
-                .await?;
+                if let Some(guild_id) = guild_id {
+                    let db = &framework.user_data.db;
+                    sqlx::query!(
+                        "
+                        INSERT into users (user_id, guild_id)
+                        VALUES ($1, $2)
+                        ON CONFLICT (user_id, guild_id) DO NOTHING
+                        ",
+                        user.id.to_string(),
+                        guild_id.to_string()
+                    )
+                    .execute(db)
+                    .await?;
+                }
             }
         }
         _ => {}
