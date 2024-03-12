@@ -43,10 +43,17 @@ async fn bot_main() -> Result<()> {
                 debug!("Registering slash commands...");
                 if cfg!(debug_assertions) {
                     let guild_id = env::var("DISCORD_TESTING_GUILD_ID")?;
-                    warn!("In debug - will register commands in the test guild ({guild_id})");
-                    let id = serenity::GuildId::from_str(guild_id.as_str())?;
-                    poise::builtins::register_in_guild(ctx, &framework.options().commands, id)
-                        .await?;
+                    warn!(
+                        guild_id,
+                        "In debug - will register commands in the test guild"
+                    );
+                    let guild_id = serenity::GuildId::from_str(guild_id.as_str())?;
+                    poise::builtins::register_in_guild(
+                        ctx,
+                        &framework.options().commands,
+                        guild_id,
+                    )
+                    .await?;
                 } else {
                     poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 }
