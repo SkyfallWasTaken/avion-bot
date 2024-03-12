@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT wallet_balance, bank_balance\nFROM users\nWHERE user_id = $1\n        ",
+  "query": "\nSELECT wallet_balance, bank_balance\nFROM users\nWHERE user_id = $1 AND guild_id = $2\n        ",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,7 @@
     ],
     "parameters": {
       "Left": [
+        "Text",
         "Text"
       ]
     },
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "0a0236fe1de38f56c6c798a03f9bddb1ef05e37a1ad361fe18cb955b496d3729"
+  "hash": "ced8eabfd6615b1a719f41975034a4409040f2201a2f75972129ec4856fae53d"
 }
