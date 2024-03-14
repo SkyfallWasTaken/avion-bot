@@ -34,7 +34,7 @@ async fn bot_main() -> Result<()> {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![user_info(), about(), avatar(), balance()],
+            commands: vec![user_info(), about(), avatar(), balance(), give()],
             event_handler: |framework, event| Box::pin(event_handler(framework, event)),
             ..Default::default()
         })
