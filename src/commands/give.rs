@@ -1,10 +1,14 @@
-use crate::embeds;
-use crate::{Context, Data, Error};
+use std::time::Duration;
+
 use poise::serenity_prelude as serenity;
 use serenity::{
-    ButtonStyle, Colour, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor,
-    CreateInteractionResponseFollowup,
+    ButtonStyle, Colour, ComponentInteractionDataKind, CreateActionRow, CreateButton, CreateEmbed,
+    CreateEmbedAuthor, CreateInteractionResponse, CreateInteractionResponseMessage, GuildId,
+    UserId,
 };
+
+use crate::embeds;
+use crate::{Context, Error};
 
 #[poise::command(slash_command, guild_only)]
 pub async fn give(
@@ -111,69 +115,130 @@ WHERE user_id = $1 AND guild_id = $2
             .embed(embed)
             .components(components)
     };
-    let msg = ctx.send(reply).await?;
 
-    while let Some(mci) = serenity::ComponentInteractionCollector::new(ctx.serenity_context())
-        .timeout(std::time::Duration::from_secs(120))
-        .filter(move |mci| {
-            mci.data.custom_id == "confirm_give" || mci.data.custom_id == "cancel_give"
-        })
+    let reply_handle = ctx.send(reply).await?;
+    let m = reply_handle.message().await?;
+
+    let interaction = match m
+        .await_component_interaction(&ctx.serenity_context().shard)
+        .timeout(Duration::from_secs(60 * 3))
         .await
     {
-        match mci.data.custom_id.as_str() {
-            "confirm_give" => {
-                let mut transaction = db.begin().await?;
+        Some(x) => x,
+        None => {
+            m.reply(&ctx, "Timed out").await.unwrap();
+            return Ok(());
+        }
+    };
 
-                // Increase receiver's wallet balance
-                sqlx::query(
-                    "UPDATE users SET wallet_balance = wallet_balance + $1 WHERE user_id = $2 AND guild_id = $3",
-                )
-                .bind(amount)
-                .bind(receiver.id.to_string())
-                .bind(guild.id.to_string())
-                .execute(&mut *transaction)
-                .await?;
-
-                // Decrease giver's wallet balance
-                sqlx::query(
-                    "UPDATE users SET wallet_balance = wallet_balance - $1 WHERE user_id = $2 AND guild_id = $3",
-                )
-                .bind(amount)
-                .bind(giver.id.to_string())
-                .bind(guild.id.to_string())
-                .execute(&mut *transaction)
-                .await?;
-
-                transaction.commit().await?;
-
-                let embed = CreateEmbed::new()
-                    .title("Success!")
-                    .description("The new balances are below.")
-                    .field(
-                        "Your wallet balance",
-                        (giver_balances.wallet_balance - amount).to_string(),
-                        true,
-                    )
-                    .field(
-                        format!("@{username}'s wallet balance", username = receiver.name),
-                        (receiver_balances.wallet_balance + amount).to_string(),
-                        true,
-                    )
-                    .author(guild_author.clone())
-                    .colour(Colour::DARK_TEAL); // FIXME: use a better color
-
-                msg.edit(
-                    ctx,
-                    poise::CreateReply::default()
-                        .embed(embed)
-                        .components(vec![]),
-                )
-                .await?;
-            }
-            "cancel_give" => {}
-            _ => unreachable!(),
-        };
+    enum UserSelection {
+        Confirm,
+        Cancel,
     }
 
+    let user_selection = match &interaction.data.kind {
+        ComponentInteractionDataKind::Button => match interaction.data.custom_id.as_str() {
+            "confirm_give" => UserSelection::Confirm,
+            "cancel_give" => UserSelection::Cancel,
+            _ => panic!("unexpected custom id"),
+        },
+        _ => panic!("unexpected interaction data kind"),
+    };
+
+    match user_selection {
+        UserSelection::Confirm => {
+            let transaction = PerformGive {
+                giver_id: giver.id,
+                receiver_id: receiver.id,
+                guild_id: guild.id,
+                amount,
+                pool: db.clone(),
+            };
+            ctx.defer().await?;
+            transaction.execute().await?;
+
+            let embed = CreateEmbed::new()
+                .title("Success!")
+                .description("The new balances are below.")
+                .field(
+                    "Your wallet balance",
+                    (giver_balances.wallet_balance - amount).to_string(),
+                    true,
+                )
+                .field(
+                    format!("@{username}'s wallet balance", username = receiver.name),
+                    (receiver_balances.wallet_balance + amount).to_string(),
+                    true,
+                )
+                .author(guild_author.clone())
+                .colour(Colour::DARK_TEAL); // FIXME: use a better color
+
+            interaction
+                .create_response(
+                    &ctx,
+                    CreateInteractionResponse::Message(
+                        CreateInteractionResponseMessage::default().embed(embed),
+                    ),
+                )
+                .await
+                .unwrap();
+        }
+        UserSelection::Cancel => {
+            interaction
+                .create_response(
+                    &ctx,
+                    CreateInteractionResponse::Message(
+                        CreateInteractionResponseMessage::default()
+                            .content("Cancelled command.")
+                            .components(vec![]),
+                    ),
+                )
+                .await
+                .unwrap();
+        }
+    }
+
+    m.delete(&ctx).await?;
+
     Ok(())
+}
+
+struct PerformGive {
+    giver_id: UserId,
+    receiver_id: UserId,
+    guild_id: GuildId,
+    amount: i32,
+    pool: sqlx::PgPool,
+}
+impl PerformGive {
+    pub async fn execute(&self) -> Result<(), Error> {
+        let mut transaction = self.pool.begin().await?;
+        let giver_id = self.giver_id.to_string();
+        let receiver_id = self.receiver_id.to_string();
+        let guild_id = &self.guild_id.to_string();
+
+        // Increase receiver's wallet balance
+        sqlx::query(
+            "UPDATE users SET wallet_balance = wallet_balance + $1 WHERE user_id = $2 AND guild_id = $3",
+        )
+        .bind(self.amount)
+        .bind(receiver_id)
+        .bind(guild_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        // Decrease giver's wallet balance
+        sqlx::query(
+            "UPDATE users SET wallet_balance = wallet_balance - $1 WHERE user_id = $2 AND guild_id = $3",
+        )
+        .bind(self.amount)
+        .bind(giver_id)
+        .bind(guild_id)
+        .execute(&mut *transaction)
+        .await?;
+
+        transaction.commit().await?;
+
+        Ok(())
+    }
 }
