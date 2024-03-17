@@ -10,6 +10,11 @@ use serenity::{
 use crate::embeds;
 use crate::{Context, Error};
 
+enum UserSelection {
+    Confirm,
+    Cancel,
+}
+
 #[poise::command(slash_command, guild_only)]
 pub async fn give(
     ctx: Context<'_>,
@@ -37,7 +42,7 @@ pub async fn give(
         .await?;
     let guild_icon_url = guild
         .icon_url()
-        .unwrap_or_else(|| String::from("Default Icon URL"));
+        .unwrap_or_else(|| String::from("Default Icon URL")); // TODO: fix this
     let db = &ctx.data().db;
 
     let giver_balances = sqlx::query!(
@@ -121,20 +126,16 @@ WHERE user_id = $1 AND guild_id = $2
 
     let interaction = match m
         .await_component_interaction(&ctx.serenity_context().shard)
-        .timeout(Duration::from_secs(60 * 3))
+        .timeout(Duration::from_secs(5))
         .await
     {
         Some(x) => x,
         None => {
             m.reply(&ctx, "Timed out").await.unwrap();
+            m.delete(&ctx).await?;
             return Ok(());
         }
     };
-
-    enum UserSelection {
-        Confirm,
-        Cancel,
-    }
 
     let user_selection = match &interaction.data.kind {
         ComponentInteractionDataKind::Button => match interaction.data.custom_id.as_str() {
