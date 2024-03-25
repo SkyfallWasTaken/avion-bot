@@ -125,17 +125,14 @@ WHERE user_id = $1 AND guild_id = $2
     let reply_handle = ctx.send(reply).await?;
     let m = reply_handle.message().await?;
 
-    let interaction = match m
+    let Some(interaction) = m
         .await_component_interaction(&ctx.serenity_context().shard)
         .timeout(Duration::from_secs(60 * 3))
         .await
-    {
-        Some(x) => x,
-        None => {
-            m.reply(&ctx, "Timed out").await.unwrap();
-            m.delete(&ctx).await?;
-            return Ok(());
-        }
+    else {
+        m.reply(&ctx, "Timed out").await.unwrap();
+        m.delete(&ctx).await?;
+        return Ok(());
     };
 
     let user_selection = match &interaction.data.kind {

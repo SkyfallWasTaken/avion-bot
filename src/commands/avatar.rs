@@ -3,6 +3,7 @@ use poise::serenity_prelude as serenity;
 use serenity::Colour;
 
 #[poise::command(slash_command, subcommands("user"))]
+#[allow(clippy::unused_async)]
 pub async fn avatar(_: Context<'_>) -> Result<(), Error> {
     unreachable!()
 }

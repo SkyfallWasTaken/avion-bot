@@ -23,6 +23,7 @@ pub enum Format {
     Relative,
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub trait TimestampExt {
     /// Converts a Serenity `Timestamp` into a Discord timestamp.
     ///

@@ -12,7 +12,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 mod commands;
-use commands::*;
+use commands::{about, avatar, balance, give, user_info};
 mod embeds;
 mod util;
 //use libc::malloc_trim; malloc_trim(0) trick for performance
@@ -42,9 +42,7 @@ async fn bot_main(config: Config) -> Result<()> {
 
     let commands = vec![user_info(), about(), avatar(), balance(), give()];
     for command in &commands {
-        if command.description.is_none() && command.subcommands.is_empty() {
-            panic!("Command `{}` has no description", command.name)
-        }
+        assert!(!(command.description.is_none() && command.subcommands.is_empty()), "Command `{}` has no description", command.name);
     }
 
     let framework = poise::Framework::builder()
@@ -143,11 +141,10 @@ fn main() -> Result<()> {
     let _ = dotenvy::dotenv();
     let config = envy::from_env::<Config>()?;
 
-    let _guard;
     match &config.sentry_dsn {
         Some(dsn) => {
             debug!("Initializing Sentry...");
-            _guard = Some(sentry::init((
+            std::mem::forget(sentry::init((
                 dsn.clone(),
                 sentry::ClientOptions {
                     release: sentry::release_name!(),
@@ -157,9 +154,8 @@ fn main() -> Result<()> {
         }
         _ => {
             warn!("No Sentry DSN provided, not initializing Sentry");
-            _guard = None;
         }
-    }
+    };
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
