@@ -1,0 +1,12 @@
+# fly.toml app configuration file generated for avion-bot on 2024-03-17T22:41:36Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'avion-bot'
+primary_region = 'sea'
+
+[build]
+
+[[vm]]
+  size = 'shared-cpu-1x'
