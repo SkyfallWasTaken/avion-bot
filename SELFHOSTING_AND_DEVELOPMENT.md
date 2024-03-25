@@ -42,6 +42,16 @@ Finally, rename the file to `.env`, and run `source .env`
 
 Just set the above variables another way.
 
+## Running migrations
+
+Run the database migrator using:
+
+```bash
+cargo sqlx migrate run
+```
+
+Ensure the environment variables are set.
+
 ## Building the project
 
 ### If you have added migrations
