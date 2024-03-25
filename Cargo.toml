@@ -9,6 +9,7 @@ edition = "2021"
 color-eyre = "0.6"
 const_format = "0.2"
 dotenvy = "0.15"
+envy = "0.4.2"
 poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
 sentry = { version = "0.32", default-features = false, features = [
     "tokio",
@@ -17,6 +18,7 @@ sentry = { version = "0.32", default-features = false, features = [
     "contexts",
     "transport",
 ] }
+serde = { version = "1.0.197", features = ["derive"] }
 sqlx = { version = "0.7", features = [
     "postgres",
     "runtime-tokio",

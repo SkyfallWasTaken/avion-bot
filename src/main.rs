@@ -1,14 +1,12 @@
-use std::env;
 use std::str::FromStr;
 
-use color_eyre::eyre::WrapErr;
 use color_eyre::Result;
-use poise::serenity_prelude::GatewayIntents;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
 
 use poise::serenity_prelude as serenity;
 use poise::FrameworkContext;
-use serenity::{ActivityData, FullEvent, Interaction};
+use serenity::{ActivityData, FullEvent, GatewayIntents, Interaction};
 
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
@@ -19,17 +17,27 @@ mod embeds;
 mod util;
 //use libc::malloc_trim; malloc_trim(0) trick for performance
 
+type Error = Box<dyn std::error::Error + Send + Sync>;
+type Context<'a> = poise::Context<'a, Data, Error>;
+
 // User data, which is stored and accessible in all command invocations
 struct Data {
     pub db: PgPool,
 }
 
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
+#[derive(Serialize, Deserialize)]
+struct Config {
+    #[serde(rename = "DISCORD_TOKEN")]
+    discord_token: String,
+    #[serde(rename = "DATABASE_URL")]
+    db_url: String,
+    #[serde(rename = "DISCORD_TESTING_GUILD_ID")]
+    testing_guild_id: Option<String>,
+    #[serde(rename = "SENTRY_DSN")]
+    sentry_dsn: Option<String>,
+}
 
-async fn bot_main() -> Result<()> {
-    let token = env::var("DISCORD_TOKEN").context("env variable is `DISCORD_TOKEN`")?;
-    let db_url = env::var("DATABASE_URL").context("env variable is `DATABASE_URL`")?;
+async fn bot_main(config: Config) -> Result<()> {
     let intents = GatewayIntents::GUILD_INTEGRATIONS | GatewayIntents::GUILDS;
 
     let commands = vec![user_info(), about(), avatar(), balance(), give()];
@@ -38,6 +46,7 @@ async fn bot_main() -> Result<()> {
             panic!("Command `{}` has no description", command.name)
         }
     }
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands,
@@ -47,13 +56,9 @@ async fn bot_main() -> Result<()> {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 debug!("Registering slash commands...");
-                if cfg!(debug_assertions) {
-                    let guild_id = env::var("DISCORD_TESTING_GUILD_ID")?;
-                    warn!(
-                        guild_id,
-                        "In debug - will register commands in the test guild"
-                    );
-                    let guild_id = serenity::GuildId::from_str(guild_id.as_str())?;
+                if let Some(testing_guild_id) = &config.testing_guild_id {
+                    warn!(testing_guild_id, "Registering commands in the test guild");
+                    let guild_id = serenity::GuildId::from_str(testing_guild_id.as_str())?;
                     poise::builtins::register_in_guild(
                         ctx,
                         &framework.options().commands,
@@ -67,7 +72,7 @@ async fn bot_main() -> Result<()> {
                 debug!("Creating PgPool...");
                 let pool = PgPoolOptions::new()
                     .max_connections(5)
-                    .connect(&db_url)
+                    .connect(&config.db_url)
                     .await?;
 
                 Ok(Data { db: pool })
@@ -75,7 +80,7 @@ async fn bot_main() -> Result<()> {
         })
         .build();
 
-    let client = serenity::ClientBuilder::new(token, intents)
+    let client = serenity::ClientBuilder::new(&config.discord_token, intents)
         .activity(ActivityData::watching("over your server"))
         .framework(framework)
         .await;
@@ -136,25 +141,30 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt::init();
     let _ = dotenvy::dotenv();
+    let config = envy::from_env::<Config>()?;
 
     let _guard;
-    if let Ok(sentry_url) = env::var("SENTRY_URL") {
-        debug!("Initializing Sentry...");
-        _guard = sentry::init((
-            sentry_url,
-            sentry::ClientOptions {
-                release: sentry::release_name!(),
-                ..Default::default()
-            },
-        ));
-    } else {
-        warn!("SENTRY_URL not set, not initializing Sentry");
+    match &config.sentry_dsn {
+        Some(dsn) => {
+            debug!("Initializing Sentry...");
+            _guard = Some(sentry::init((
+                dsn.clone(),
+                sentry::ClientOptions {
+                    release: sentry::release_name!(),
+                    ..Default::default()
+                },
+            )));
+        }
+        _ => {
+            warn!("No Sentry DSN provided, not initializing Sentry");
+            _guard = None;
+        }
     }
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?
-        .block_on(bot_main())?;
+        .block_on(bot_main(config))?;
 
     Ok(())
 }

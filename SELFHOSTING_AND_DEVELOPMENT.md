@@ -30,7 +30,7 @@ Open `.env.example` and fill in the following variables:
 
 - **DISCORD_TOKEN**: Your Discord bot token
 - **DISCORD_TESTING_GUILD_ID**: Your testing server's server ID
-- **SENRTY_URL**: (optional) Sentry URL to send events to
+- **SENTRY_DSN**: (optional) Sentry URL to send events to
 - **DATABASE_URL**: Your Postgres database URL.
 
 Finally, rename the file to `.env`, and run `source .env`
