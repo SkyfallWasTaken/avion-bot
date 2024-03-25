@@ -32,9 +32,15 @@ async fn bot_main() -> Result<()> {
     let db_url = env::var("DATABASE_URL").context("env variable is `DATABASE_URL`")?;
     let intents = GatewayIntents::GUILD_INTEGRATIONS | GatewayIntents::GUILDS;
 
+    let commands = vec![user_info(), about(), avatar(), balance(), give()];
+    for command in &commands {
+        if command.description.is_none() && command.subcommands.is_empty() {
+            panic!("Command `{}` has no description", command.name)
+        }
+    }
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![user_info(), about(), avatar(), balance(), give()],
+            commands,
             event_handler: |framework, event| Box::pin(event_handler(framework, event)),
             ..Default::default()
         })
