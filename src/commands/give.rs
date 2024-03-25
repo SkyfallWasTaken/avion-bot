@@ -15,6 +15,7 @@ enum UserSelection {
     Cancel,
 }
 
+/// Give coins to another user.
 #[poise::command(slash_command, guild_only)]
 pub async fn give(
     ctx: Context<'_>,
@@ -126,7 +127,7 @@ WHERE user_id = $1 AND guild_id = $2
 
     let interaction = match m
         .await_component_interaction(&ctx.serenity_context().shard)
-        .timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(60 * 3))
         .await
     {
         Some(x) => x,
