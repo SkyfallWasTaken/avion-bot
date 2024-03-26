@@ -173,32 +173,33 @@ WHERE user_id = $1 AND guild_id = $2
                 .author(guild_author.clone())
                 .colour(Colour::DARK_TEAL); // FIXME: use a better color
 
+            let mut msg = interaction.message.clone();
+            msg.edit(
+                ctx,
+                serenity::EditMessage::new().embed(embed).components(vec![]),
+            )
+            .await?;
+
             interaction
-                .create_response(
-                    &ctx,
-                    CreateInteractionResponse::Message(
-                        CreateInteractionResponseMessage::default().embed(embed),
-                    ),
-                )
-                .await
-                .unwrap();
+                .create_response(ctx, serenity::CreateInteractionResponse::Acknowledge)
+                .await?;
         }
         UserSelection::Cancel => {
+            let mut msg = interaction.message.clone();
+            msg.edit(
+                ctx,
+                serenity::EditMessage::new()
+                    .content("Cancelled command.")
+                    .suppress_embeds(true)
+                    .components(vec![]),
+            )
+            .await?;
+
             interaction
-                .create_response(
-                    &ctx,
-                    CreateInteractionResponse::Message(
-                        CreateInteractionResponseMessage::default()
-                            .content("Cancelled command.")
-                            .components(vec![]),
-                    ),
-                )
-                .await
-                .unwrap();
+                .create_response(ctx, serenity::CreateInteractionResponse::Acknowledge)
+                .await?;
         }
     }
-
-    m.delete(&ctx).await?;
 
     Ok(())
 }
