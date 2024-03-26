@@ -27,13 +27,11 @@ struct Data {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    #[serde(rename = "DISCORD_TOKEN")]
     discord_token: String,
-    #[serde(rename = "DATABASE_URL")]
+    #[serde(rename = "database_url")]
     db_url: String,
-    #[serde(rename = "DISCORD_TESTING_GUILD_ID")]
+    #[serde(rename = "discord_testing_guild_id")]
     testing_guild_id: Option<String>,
-    #[serde(rename = "SENTRY_DSN")]
     sentry_dsn: Option<String>,
 }
 
@@ -42,7 +40,11 @@ async fn bot_main(config: Config) -> Result<()> {
 
     let commands = vec![user_info(), about(), avatar(), balance(), give()];
     for command in &commands {
-        assert!(!(command.description.is_none() && command.subcommands.is_empty()), "Command `{}` has no description", command.name);
+        assert!(
+            !(command.description.is_none() && command.subcommands.is_empty()),
+            "Command `{}` has no description",
+            command.name
+        );
     }
 
     let framework = poise::Framework::builder()
