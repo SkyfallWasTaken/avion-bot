@@ -11,7 +11,7 @@ impl UserBalances {
     pub async fn from_user_and_guild_ids(
         user_id: serenity::UserId,
         guild_id: serenity::GuildId,
-        db: PgPool
+        db: PgPool,
     ) -> Result<Self> {
         let record = sqlx::query!(
             "

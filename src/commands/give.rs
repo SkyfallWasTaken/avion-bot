@@ -2,9 +2,7 @@ use std::time::Duration;
 
 use poise::serenity_prelude as serenity;
 use serenity::{
-    ButtonStyle, Colour, ComponentInteractionDataKind, CreateActionRow, CreateButton, CreateEmbed,
-    CreateEmbedAuthor, CreateInteractionResponse, CreateInteractionResponseMessage, GuildId,
-    UserId,
+    ButtonStyle, Colour, ComponentInteractionDataKind, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, GuildId, UserId,
 };
 
 use crate::embeds;
