@@ -19,7 +19,6 @@ pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
         .field("", "", false)
         .field("Rust version", env!("VERGEN_RUSTC_SEMVER"), true)
         .field("Git commit", format!("`{}`", env!("VERGEN_GIT_SHA")), true)
-        // TODO: add images
         .thumbnail(image_urls::AVION_AVATAR)
         .colour(Colour::BLUE)
         .footer(CreateEmbedFooter::new(

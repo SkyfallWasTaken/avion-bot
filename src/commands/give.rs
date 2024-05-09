@@ -46,18 +46,16 @@ pub async fn give(
     let db = &ctx.data().db;
 
     let giver_balances = UserBalances::from_user_and_guild_ids(giver.id, guild.id, db).await?;
-    let receiver_balance_record =
-        UserBalances::from_user_and_guild_ids(receiver.id, guild.id, db).await;
-
-    let receiver_balances = match receiver_balance_record {
-        Ok(record) => record,
-        Err(sqlx::Error::RowNotFound) => {
-            ctx.send(poise::CreateReply::default().embed(embeds::user_not_in_db()))
-                .await?;
-            return Ok(());
-        }
-        Err(err) => return Err(Box::new(err)),
-    };
+    let receiver_balances =
+        match UserBalances::from_user_and_guild_ids(receiver.id, guild.id, db).await {
+            Ok(record) => record,
+            Err(sqlx::Error::RowNotFound) => {
+                ctx.send(poise::CreateReply::default().embed(embeds::user_not_in_db()))
+                    .await?;
+                return Ok(());
+            }
+            Err(err) => return Err(Box::new(err)),
+        };
 
     if giver_balances.wallet_balance < amount {
         let embed = CreateEmbed::new()
