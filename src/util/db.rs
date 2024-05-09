@@ -1,4 +1,3 @@
-use color_eyre::Result;
 use poise::serenity_prelude as serenity;
 use sqlx::PgPool;
 
@@ -11,8 +10,8 @@ impl UserBalances {
     pub async fn from_user_and_guild_ids(
         user_id: serenity::UserId,
         guild_id: serenity::GuildId,
-        db: PgPool,
-    ) -> Result<Self> {
+        db: &PgPool,
+    ) -> sqlx::Result<Self> {
         let record = sqlx::query!(
             "
     SELECT bank_balance, wallet_balance

@@ -2,10 +2,11 @@ use std::time::Duration;
 
 use poise::serenity_prelude as serenity;
 use serenity::{
-    ButtonStyle, Colour, ComponentInteractionDataKind, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, GuildId, UserId,
+    ButtonStyle, Colour, ComponentInteractionDataKind, CreateActionRow, CreateButton, CreateEmbed,
+    CreateEmbedAuthor, GuildId, UserId,
 };
 
-use crate::embeds;
+use crate::{embeds, util::db::UserBalances};
 use crate::{Context, Error};
 
 enum UserSelection {
@@ -44,28 +45,9 @@ pub async fn give(
         .unwrap_or_else(|| String::from("Default Icon URL")); // TODO: fix this
     let db = &ctx.data().db;
 
-    let giver_balances = sqlx::query!(
-        "
-SELECT wallet_balance
-FROM users
-WHERE user_id = $1 AND guild_id = $2
-        ",
-        ctx.author().id.to_string(),
-        guild.id.to_string()
-    )
-    .fetch_one(db)
-    .await?;
-    let receiver_balance_record = sqlx::query!(
-        "
-SELECT wallet_balance
-FROM users
-WHERE user_id = $1 AND guild_id = $2
-    ",
-        receiver.id.to_string(),
-        guild.id.to_string()
-    )
-    .fetch_one(db)
-    .await;
+    let giver_balances = UserBalances::from_user_and_guild_ids(giver.id, guild.id, db).await?;
+    let receiver_balance_record =
+        UserBalances::from_user_and_guild_ids(receiver.id, guild.id, db).await;
 
     let receiver_balances = match receiver_balance_record {
         Ok(record) => record,

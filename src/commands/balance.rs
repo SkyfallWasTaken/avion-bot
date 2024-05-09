@@ -1,4 +1,4 @@
-use crate::embeds;
+use crate::{embeds, util::db::UserBalances};
 use crate::{Context, Error};
 use poise::serenity_prelude::{self as serenity, CreateEmbedAuthor};
 use serenity::Colour;
@@ -19,19 +19,7 @@ pub async fn balance(
     let guild_icon_url = guild.icon_url().unwrap_or_default();
     let db = &ctx.data().db;
 
-    let balances_record = sqlx::query!(
-        "
-SELECT wallet_balance, bank_balance
-FROM users
-WHERE user_id = $1 AND guild_id = $2
-        ",
-        u.id.to_string(),
-        guild.id.to_string()
-    )
-    .fetch_one(db)
-    .await;
-
-    let balances = match balances_record {
+    let balances = match UserBalances::from_user_and_guild_ids(u.id, guild.id, db).await {
         Ok(record) => record,
         Err(sqlx::Error::RowNotFound) => {
             ctx.send(poise::CreateReply::default().embed(embeds::user_not_in_db()))
