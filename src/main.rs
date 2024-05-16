@@ -1,3 +1,4 @@
+#![warn(rust_2018_idioms)]
 use std::str::FromStr;
 
 use color_eyre::Result;
@@ -6,13 +7,13 @@ use tracing::{debug, info, warn};
 
 use poise::serenity_prelude as serenity;
 use poise::FrameworkContext;
-use serenity::{ActivityData, FullEvent, GatewayIntents, Interaction};
+use serenity::{ActivityData, FullEvent, GatewayIntents};
 
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 mod commands;
-use commands::{about, avatar, balance, give, user_info};
+use commands::{about, avatar, balance, give, register, user_info};
 mod embeds;
 mod util;
 //use libc::malloc_trim; malloc_trim(0) trick for performance
@@ -38,7 +39,14 @@ struct Config {
 async fn bot_main(config: Config) -> Result<()> {
     let intents = GatewayIntents::GUILD_INTEGRATIONS | GatewayIntents::GUILDS;
 
-    let commands = vec![user_info(), about(), avatar(), balance(), give()];
+    let commands = vec![
+        user_info(),
+        about(),
+        avatar(),
+        balance(),
+        give(),
+        register(),
+    ];
     for command in &commands {
         assert!(
             !(command.description.is_none() && command.subcommands.is_empty()),
@@ -89,51 +97,20 @@ async fn bot_main(config: Config) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::unused_async)]
 async fn event_handler(
-    framework: FrameworkContext<'_, Data, Error>,
+    _framework: FrameworkContext<'_, Data, Error>,
     event: &FullEvent,
 ) -> Result<(), Error> {
-    match event {
-        FullEvent::Ready { data_about_bot, .. } => {
-            info!(
-                "Ready! Logged in as {}#{}",
-                data_about_bot.user.name,
-                // Should never be None, as bots still use the "Name#0000" format instead of usernames
-                data_about_bot.user.discriminator.unwrap()
-            );
-        }
-        FullEvent::InteractionCreate { interaction } => {
-            // TODO: maybe use generics or if let?
-            let user = match interaction {
-                Interaction::Command(cmd) => Some(&cmd.user),
-                Interaction::Component(cmd) => Some(&cmd.user),
-                _ => None,
-            };
-            let guild_id = match interaction {
-                Interaction::Command(cmd) => cmd.guild_id,
-                Interaction::Component(cmd) => cmd.guild_id,
-                _ => None,
-            };
-
-            if let Some(user) = user {
-                if let Some(guild_id) = guild_id {
-                    let db = &framework.user_data.db;
-                    sqlx::query!(
-                        "
-                        INSERT into users (user_id, guild_id)
-                        VALUES ($1, $2)
-                        ON CONFLICT (user_id, guild_id) DO NOTHING
-                        ",
-                        user.id.to_string(),
-                        guild_id.to_string()
-                    )
-                    .execute(db)
-                    .await?;
-                }
-            }
-        }
-        _ => {}
+    if let FullEvent::Ready { data_about_bot, .. } = event {
+        info!(
+            "Ready! Logged in as {}#{}",
+            data_about_bot.user.name,
+            // Should never be None, as bots still use the "Name#0000" format instead of usernames
+            data_about_bot.user.discriminator.unwrap()
+        );
     }
+
     Ok(())
 }
 

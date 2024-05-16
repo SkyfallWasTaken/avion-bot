@@ -7,4 +7,4 @@ macro_rules! register_commands {
     };
 }
 
-register_commands!(user_info, about, avatar, balance, give);
+register_commands!(user_info, about, avatar, balance, give, register);
