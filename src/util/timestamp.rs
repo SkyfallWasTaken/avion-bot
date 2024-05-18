@@ -1,25 +1,19 @@
+use std::fmt::Display;
+
 use poise::serenity_prelude as serenity;
 use serenity::Timestamp;
 
 /// The format in which you want the timestamp to be generated.
-#[derive(strum_macros::Display)]
 #[allow(unused)]
 pub enum Format {
-    #[strum(to_string = "t")]
     ShortTime,
-    #[strum(to_string = "T")]
     LongTime,
 
-    #[strum(to_string = "d")]
     ShortDate,
-    #[strum(to_string = "D")]
     LongDate,
-    #[strum(to_string = "f")]
     LongDateShortTime,
-    #[strum(to_string = "F")]
     LongDateDayAndShortTime,
 
-    #[strum(to_string = "R")]
     Relative,
 }
 
@@ -44,5 +38,20 @@ impl TimestampExt for Timestamp {
         let epoch = self.unix_timestamp();
         let format_string = format.to_string();
         format!("<t:{epoch}:{format_string}>")
+    }
+}
+
+impl Display for Format {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let format_string = match self {
+            Format::ShortTime => "t",
+            Format::LongTime => "T",
+            Format::ShortDate => "d",
+            Format::LongDate => "D",
+            Format::LongDateShortTime => "f",
+            Format::LongDateDayAndShortTime => "F",
+            Format::Relative => "R",
+        };
+        write!(f, "{}", format_string)
     }
 }
