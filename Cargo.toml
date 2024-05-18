@@ -11,14 +11,7 @@ const_format = "0.2"
 dotenvy = "0.15"
 envy = "0.4.2"
 poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
-sentry = { version = "0.32", default-features = false, features = [
-    "tokio",
-    "panic",
-    "backtrace",
-    "contexts",
-    "transport",
-] }
-sentry-tracing = "0.32.3"
+sentry = { version = "0.32", features = ["tokio", "tracing"] }
 serde = { version = "1.0.197", features = ["derive"] }
 sqlx = { version = "0.7", features = [
     "postgres",
@@ -29,7 +22,7 @@ strum = "0.26"
 strum_macros = "0.26"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [build-dependencies]
 eyre = "0.6"
@@ -40,10 +33,6 @@ vergen = { version = "8", features = [
     "cargo",
     "rustc",
 ] }
-
-[profile.release]
-# Required for Sentry line numbers
-debug = 1
 
 # Decreases build times
 [profile.dev.package.sqlx-macros]

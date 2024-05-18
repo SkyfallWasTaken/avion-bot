@@ -5,6 +5,7 @@ use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
 use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
 
 use poise::serenity_prelude as serenity;
 use poise::FrameworkContext;
@@ -119,7 +120,7 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     let _ = dotenvy::dotenv();
     let config = envy::from_env::<Config>()?;
-    let _guard;
+    let mut _guard = None;
 
     match &config.sentry_dsn {
         Some(dsn) => {
@@ -127,16 +128,18 @@ fn main() -> Result<()> {
             let options = sentry::ClientOptions::default();
             let options = sentry::apply_defaults(options);
 
-            _guard = sentry::init((dsn.clone(), options));
+            _guard = Some(sentry::init((dsn.clone(), options)));
         }
         _ => {
-            warn!("No Sentry DSN provided, not initializing Sentry");
+            // We have to use eprintln here because we haven't initialized Sentry yet
+            eprintln!("WARN - No Sentry DSN provided, not initializing Sentry");
         }
     };
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
-        .with(sentry_tracing::layer())
+        .with(sentry::integrations::tracing::layer())
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"))) // Add this line to read from RUST_LOG
         .init();
 
     tokio::runtime::Builder::new_multi_thread()
