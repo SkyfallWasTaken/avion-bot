@@ -4,6 +4,7 @@ use std::str::FromStr;
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
+use tracing_subscriber::prelude::*;
 
 use poise::serenity_prelude as serenity;
 use poise::FrameworkContext;
@@ -116,25 +117,27 @@ async fn event_handler(
 
 fn main() -> Result<()> {
     color_eyre::install()?;
-    tracing_subscriber::fmt::init();
     let _ = dotenvy::dotenv();
     let config = envy::from_env::<Config>()?;
+    let _guard;
 
     match &config.sentry_dsn {
         Some(dsn) => {
             debug!("Initializing Sentry...");
-            std::mem::forget(sentry::init((
-                dsn.clone(),
-                sentry::ClientOptions {
-                    release: sentry::release_name!(),
-                    ..Default::default()
-                },
-            )));
+            let options = sentry::ClientOptions::default();
+            let options = sentry::apply_defaults(options);
+
+            _guard = sentry::init((dsn.clone(), options));
         }
         _ => {
             warn!("No Sentry DSN provided, not initializing Sentry");
         }
     };
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .with(sentry_tracing::layer())
+        .init();
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()

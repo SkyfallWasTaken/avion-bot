@@ -112,6 +112,7 @@ dependencies = [
  "eyre",
  "poise",
  "sentry",
+ "sentry-tracing",
  "serde",
  "sqlx",
  "strum",
