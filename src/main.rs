@@ -131,7 +131,7 @@ fn main() -> Result<()> {
             _guard = Some(sentry::init((dsn.clone(), options)));
         }
         _ => {
-            // We have to use eprintln here because we haven't initialized Sentry yet
+            // We have to use eprintln here because we haven't initialized the logger yet
             eprintln!("WARN - No Sentry DSN provided, not initializing Sentry");
         }
     };
