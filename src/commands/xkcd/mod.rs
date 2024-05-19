@@ -15,7 +15,7 @@ pub async fn xkcd(_: Context<'_>) -> Result<(), Error> {
 #[poise::command(slash_command)]
 pub async fn today(ctx: Context<'_>) -> Result<(), Error> {
     let xkcd = Xkcd::from_num(None, &ctx.data().client).await?;
-    ctx.send(poise::CreateReply::default().embed(xkcd.to_embed()))
+    ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))
         .await?;
 
     Ok(())
@@ -29,7 +29,7 @@ pub async fn comic(
 ) -> Result<(), Error> {
     match Xkcd::from_num(Some(num), &ctx.data().client).await {
         Ok(xkcd) => {
-            ctx.send(poise::CreateReply::default().embed(xkcd.to_embed()))
+            ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))
                 .await?;
         }
         _ => {
@@ -53,7 +53,7 @@ pub async fn random(ctx: Context<'_>) -> Result<(), Error> {
     let num = fastrand::usize(1..latest.num + 1);
     let xkcd = Xkcd::from_num(Some(num), &data.client).await?;
 
-    ctx.send(poise::CreateReply::default().embed(xkcd.to_embed()))
+    ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))
         .await?;
 
     Ok(())

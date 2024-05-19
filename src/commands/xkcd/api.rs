@@ -23,7 +23,7 @@ impl Xkcd {
         Ok(json)
     }
 
-    pub fn to_embed(self) -> CreateEmbed {
+    pub fn into_embed(self) -> CreateEmbed {
         CreateEmbed::new()
             .title(self.safe_title)
             .footer(CreateEmbedFooter::new(self.alt))
