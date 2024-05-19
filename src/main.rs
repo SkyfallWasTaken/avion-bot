@@ -7,15 +7,14 @@ use tracing::{debug, info, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{ActivityData, ClientBuilder, FullEvent, GatewayIntents, GuildId};
 use poise::FrameworkContext;
-use serenity::{ActivityData, FullEvent, GatewayIntents};
 
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 mod commands;
-use commands::{about, avatar, balance, give, register, user_info};
+use commands::*;
 mod embeds;
 mod util;
 //use libc::malloc_trim; malloc_trim(0) trick for performance
@@ -26,6 +25,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 // User data, which is stored and accessible in all command invocations
 struct Data {
     pub db: PgPool,
+    pub client: reqwest::Client,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,6 +48,7 @@ async fn bot_main(config: Config) -> Result<()> {
         balance(),
         give(),
         register(),
+        xkcd(),
     ];
     for command in &commands {
         assert!(
@@ -68,7 +69,7 @@ async fn bot_main(config: Config) -> Result<()> {
                 debug!("Registering slash commands...");
                 if let Some(testing_guild_id) = &config.testing_guild_id {
                     warn!(testing_guild_id, "Registering commands in the test guild");
-                    let guild_id = serenity::GuildId::from_str(testing_guild_id.as_str())?;
+                    let guild_id = GuildId::from_str(testing_guild_id.as_str())?;
                     poise::builtins::register_in_guild(
                         ctx,
                         &framework.options().commands,
@@ -85,12 +86,15 @@ async fn bot_main(config: Config) -> Result<()> {
                     .connect(&config.db_url)
                     .await?;
 
-                Ok(Data { db: pool })
+                Ok(Data {
+                    db: pool,
+                    client: reqwest::Client::new(),
+                })
             })
         })
         .build();
 
-    let client = serenity::ClientBuilder::new(&config.discord_token, intents)
+    let client = ClientBuilder::new(&config.discord_token, intents)
         .activity(ActivityData::watching("over your server"))
         .framework(framework)
         .await;

@@ -1,7 +1,6 @@
 use std::fmt::Display;
 
-use poise::serenity_prelude as serenity;
-use serenity::Timestamp;
+use poise::serenity_prelude::Timestamp;
 
 /// The format in which you want the timestamp to be generated.
 #[allow(unused)]

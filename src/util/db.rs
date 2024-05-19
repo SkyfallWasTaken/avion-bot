@@ -1,4 +1,4 @@
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{GuildId, UserId};
 use sqlx::PgPool;
 
 pub struct UserBalances {
@@ -8,8 +8,8 @@ pub struct UserBalances {
 
 impl UserBalances {
     pub async fn from_user_and_guild_ids(
-        user_id: serenity::UserId,
-        guild_id: serenity::GuildId,
+        user_id: UserId,
+        guild_id: GuildId,
         db: &PgPool,
     ) -> sqlx::Result<Self> {
         let record = sqlx::query!(

@@ -1,5 +1,4 @@
-use poise::serenity_prelude as serenity;
-use serenity::{Colour, CreateEmbed};
+use poise::serenity_prelude::{Colour, CreateEmbed};
 
 pub fn user_not_in_db() -> CreateEmbed {
     CreateEmbed::new()

@@ -1,5 +1,4 @@
-use poise::serenity_prelude as serenity;
-use serenity::{Colour, CreateEmbed, CreateEmbedFooter, Timestamp};
+use poise::serenity_prelude::{Colour, CreateEmbed, CreateEmbedFooter, Timestamp};
 
 use crate::util::image_urls;
 use crate::util::timestamp::{Format as TimestampFormat, TimestampExt};

@@ -1,6 +1,5 @@
 use crate::{Context, Error};
-use poise::serenity_prelude as serenity;
-use serenity::Colour;
+use poise::serenity_prelude::{Colour, CreateEmbed};
 
 /// Register your user account in the server economy.
 #[poise::command(slash_command, guild_only)]
@@ -31,13 +30,13 @@ pub async fn register(ctx: Context<'_>) -> Result<(), Error> {
         .execute(db)
         .await?;
 
-        let embed = serenity::CreateEmbed::new()
+        let embed = CreateEmbed::new()
             .title("Success!")
             .colour(Colour::DARK_TEAL) // FIXME: use a better color
             .description("Successfully registered your account in the server economy!");
         ctx.send(poise::CreateReply::default().embed(embed)).await?;
     } else {
-        let embed = serenity::CreateEmbed::new()
+        let embed = CreateEmbed::new()
             .title("Error")
             .colour(Colour::RED)
             .description("You are already registered in the server economy!");

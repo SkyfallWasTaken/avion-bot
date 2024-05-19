@@ -1,13 +1,12 @@
 use crate::{embeds, util::db::UserBalances};
 use crate::{Context, Error};
-use poise::serenity_prelude::{self as serenity, CreateEmbedAuthor};
-use serenity::Colour;
+use poise::serenity_prelude::{Colour, CreateEmbed, CreateEmbedAuthor, User};
 
 /// Gets a user's balance in the server.
 #[poise::command(slash_command, guild_only)]
 pub async fn balance(
     ctx: Context<'_>,
-    #[description = "Selected user - defaults to you"] user: Option<serenity::User>,
+    #[description = "Selected user - defaults to you"] user: Option<User>,
 ) -> Result<(), Error> {
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
     // the command is server only
@@ -29,7 +28,7 @@ pub async fn balance(
         Err(err) => return Err(Box::new(err)),
     };
 
-    let embed = serenity::CreateEmbed::new()
+    let embed = CreateEmbed::new()
         .title(format!("@{username}'s balances", username = u.name))
         .field("Wallet Balance", balances.wallet_balance.to_string(), true)
         .field("Bank Balance", balances.bank_balance.to_string(), true)
