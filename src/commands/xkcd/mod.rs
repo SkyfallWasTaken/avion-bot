@@ -27,19 +27,16 @@ pub async fn comic(
     ctx: Context<'_>,
     #[description = "Comic number"] num: usize,
 ) -> Result<(), Error> {
-    match Xkcd::from_num(Some(num), &ctx.data().client).await {
-        Ok(xkcd) => {
-            ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))
-                .await?;
-        }
-        _ => {
-            let embed = CreateEmbed::default()
-                .title("Comic not found")
-                .description("It looks like the comic you requested does not exist. Sorry!")
-                .colour(Colour::RED);
+    if let Ok(xkcd) = Xkcd::from_num(Some(num), &ctx.data().client).await {
+        ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))
+            .await?;
+    } else {
+        let embed = CreateEmbed::default()
+            .title("Comic not found")
+            .description("It looks like the comic you requested does not exist. Sorry!")
+            .colour(Colour::RED);
 
-            ctx.send(poise::CreateReply::default().embed(embed)).await?;
-        }
+        ctx.send(poise::CreateReply::default().embed(embed)).await?;
     };
 
     Ok(())
@@ -50,7 +47,7 @@ pub async fn comic(
 pub async fn random(ctx: Context<'_>) -> Result<(), Error> {
     let data = ctx.data();
     let latest = Xkcd::from_num(None, &data.client).await?;
-    let num = fastrand::usize(1..latest.num + 1);
+    let num = fastrand::usize(1..=latest.num);
     let xkcd = Xkcd::from_num(Some(num), &data.client).await?;
 
     ctx.send(poise::CreateReply::default().embed(xkcd.into_embed()))

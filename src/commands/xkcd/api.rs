@@ -14,7 +14,7 @@ pub struct Xkcd {
 impl Xkcd {
     pub async fn from_num(num: Option<usize>, client: &reqwest::Client) -> Result<Self, Error> {
         let url = match num {
-            Some(id) => format!("https://xkcd.com/{}/info.0.json", id),
+            Some(id) => format!("https://xkcd.com/{id}/info.0.json"),
             None => "https://xkcd.com/info.0.json".to_string(),
         };
         let response = client.get(&url).send().await?;

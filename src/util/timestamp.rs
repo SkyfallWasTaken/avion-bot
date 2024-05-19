@@ -51,6 +51,6 @@ impl Display for Format {
             Format::LongDateDayAndShortTime => "F",
             Format::Relative => "R",
         };
-        write!(f, "{}", format_string)
+        write!(f, "{format_string}")
     }
 }

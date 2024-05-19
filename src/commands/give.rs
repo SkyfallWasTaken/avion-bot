@@ -16,6 +16,7 @@ enum UserSelection {
 
 /// Give coins to another user.
 #[poise::command(slash_command, guild_only)]
+#[allow(clippy::too_many_lines)]
 pub async fn give(
     ctx: Context<'_>,
     #[description = "Selected user"] receiver: serenity::User,

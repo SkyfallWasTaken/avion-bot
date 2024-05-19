@@ -1,4 +1,4 @@
-#![warn(rust_2018_idioms)]
+#![warn(rust_2018_idioms, clippy::pedantic)]
 use std::str::FromStr;
 
 use color_eyre::Result;
@@ -14,6 +14,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 mod commands;
+#[allow(clippy::wildcard_imports)]
 use commands::*;
 mod embeds;
 mod util;

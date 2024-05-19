@@ -18,6 +18,7 @@ pub async fn register(ctx: Context<'_>) -> Result<(), Error> {
     .exists
     .unwrap_or(false); // TODO: could probably change sql query to return a boolean
 
+    #[allow(clippy::if_not_else)]
     if !user_exists {
         sqlx::query!(
             "
