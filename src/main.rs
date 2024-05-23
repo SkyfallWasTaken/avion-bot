@@ -1,4 +1,3 @@
-#![warn(rust_2018_idioms, clippy::pedantic)]
 use std::str::FromStr;
 
 use color_eyre::Result;
@@ -51,6 +50,7 @@ async fn bot_main(config: Config) -> Result<()> {
         register(),
         xkcd(),
     ];
+
     for command in &commands {
         assert!(
             !(command.description.is_none() && command.subcommands.is_empty()),
