@@ -5,7 +5,7 @@ use poise::serenity_prelude::{Colour, CreateEmbed};
 mod api;
 use api::Xkcd;
 
-#[poise::command(slash_command, subcommands("today", "comic"))]
+#[poise::command(slash_command, subcommands("today", "comic", "random"))]
 #[allow(clippy::unused_async)]
 pub async fn xkcd(_: Context<'_>) -> Result<(), Error> {
     unreachable!()
