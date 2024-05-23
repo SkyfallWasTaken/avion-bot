@@ -46,7 +46,16 @@ pub async fn give(
         .unwrap_or_else(|| String::from("Default Icon URL")); // TODO: fix this
     let db = &ctx.data().db;
 
-    let giver_balances = UserBalances::from_user_and_guild_ids(giver.id, guild.id, db).await?;
+    // TODO: I don't like this code. At the same time, I think it might be the best way of handling this?
+    let giver_balances = match UserBalances::from_user_and_guild_ids(giver.id, guild.id, db).await {
+        Ok(record) => record,
+        Err(sqlx::Error::RowNotFound) => {
+            ctx.send(poise::CreateReply::default().embed(embeds::user_not_in_db()))
+                .await?;
+            return Ok(());
+        }
+        Err(err) => return Err(Box::new(err)),
+    };
     let receiver_balances =
         match UserBalances::from_user_and_guild_ids(receiver.id, guild.id, db).await {
             Ok(record) => record,
