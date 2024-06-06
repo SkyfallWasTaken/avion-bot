@@ -115,7 +115,6 @@ dependencies = [
  "const_format",
  "dotenvy",
  "envy",
- "eyre",
  "fastrand",
  "poise",
  "reqwest 0.12.4",
