@@ -12,7 +12,7 @@ dotenvy = "0.15"
 envy = "0.4.2"
 fastrand = "2.1.0"
 poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
-reqwest = "0.12.6"
+reqwest = "0.12.7"
 sentry = { version = "0.34", features = ["tokio", "tracing"] }
 serde = { version = "1.0.208", features = ["derive"] }
 sqlx = { version = "0.8", features = [
