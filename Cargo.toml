@@ -14,7 +14,7 @@ fastrand = "2.1.1"
 poise = { git = "https://github.com/serenity-rs/poise", branch = "next" }
 reqwest = "0.12.7"
 sentry = { version = "0.34", features = ["tokio", "tracing"] }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
 sqlx = { version = "0.8", features = [
     "postgres",
     "runtime-tokio",
