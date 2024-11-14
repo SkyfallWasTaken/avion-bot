@@ -1641,7 +1641,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 [[package]]
 name = "poise"
 version = "0.6.1"
-source = "git+https://github.com/serenity-rs/poise?branch=next#cb75eda2a91dda03683a46ddd5cd2335f00337c1"
+source = "git+https://github.com/serenity-rs/poise?branch=next#6d2ae48370c2a185fea0afa355d51a0f42905bec"
 dependencies = [
  "async-trait",
  "derivative",
@@ -1659,7 +1659,7 @@ dependencies = [
 [[package]]
 name = "poise_macros"
 version = "0.6.1"
-source = "git+https://github.com/serenity-rs/poise?branch=next#cb75eda2a91dda03683a46ddd5cd2335f00337c1"
+source = "git+https://github.com/serenity-rs/poise?branch=next#6d2ae48370c2a185fea0afa355d51a0f42905bec"
 dependencies = [
  "darling",
  "proc-macro2",
